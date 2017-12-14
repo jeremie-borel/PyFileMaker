@@ -57,7 +57,16 @@ class FMResultset(FMXML.FMXML):
 			for column in self.doGetXMLElements(record, 'field'):
 				fieldname = self.doGetXMLAttribute(column, 'name')
 				try:
-					recordDict[fieldname] = self.doGetXMLElement(column, 'data').getData()
+					 # recordDict[fieldname] = self.doGetXMLElement(column, 'data').getData()
+                    try:    # start added by blj to account for multi-valued fields
+                        L = self.metadata[fieldname]['max-repeat']
+                    except:
+                        L = '1'
+                    if L == '1':
+                        recordDict[fieldname] = self.doGetXMLElement(column, 'data').getData()
+                    else:                        
+                        recordDict[fieldname] = [ e.getData() for e in self.doGetXMLElements(column, 'data') ]
+                    # end modified
 				except:
 					recordDict[fieldname] = ''.encode('UTF-8')
 					# it means there are no data for this column!!!

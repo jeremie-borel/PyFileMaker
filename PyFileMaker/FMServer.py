@@ -221,8 +221,10 @@ class FMServer:
 
 	def getFile(self, file_xml_uri):
 		""" This will execute cmd to fetch file data from FMServer """
-		find = re.match('/fmi/xml/cnt/([\w\d.-]+)\.([\w]+)?-*', file_xml_uri)
-
+		# added % and , chars in the list of allowed chars so that html 
+		# special char are possible in the file name. (19.1.2016, blj)
+		find = re.match('/fmi/xml/cnt/([,%\w\d.-]+)\.([\w]+)?-*', file_xml_uri) 
+		
 		file_name = find.group(1)
 		file_extension = find.group(2)
 		file_binary = self._doRequest(is_file=True, file_xml_uri=file_xml_uri)
@@ -339,7 +341,9 @@ class FMServer:
 		request.append('-findquery')
 
 		resp = self._doRequest(request)
-		result = FMResultset.FMResultset(resp).resultset
+		# modified by blj . 29.12.2015
+		# result = FMResultset.FMResultset(resp).resultset
+		result = FMResultset.FMResultset(resp)
 
 		return result
 
@@ -678,7 +682,8 @@ class FMServer:
 
 		resp = requests.get(
 			url = url,
-			auth = (self._login, self._password)
+			auth = (self._login, self._password),
+			verify = False,
 		)
 		resp.raise_for_status()
 

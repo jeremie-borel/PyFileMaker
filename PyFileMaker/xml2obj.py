@@ -87,8 +87,8 @@ class Xml2Obj:
 		Parser.CharacterDataHandler = self.CharacterData
 
 		# Parse the XML File
-		ParserStatus = Parser.Parse(open(filename,'r').read(), 1)
-		
+		ParserStatus = Parser.ParseFile( open(filename,'r') )
+        
 		return self.root
 
 	def ParseString(self,data):

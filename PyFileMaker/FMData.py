@@ -23,6 +23,10 @@ def key_dict( from_dict ):
 	old2new = {}
 	new2old = {}
 	for key in from_dict:
+		# added by blj, avoid empty keys
+        if not key:
+            continue
+
 		k = normalizeUnicode(key,'identifier')
 		if k != key:
 			i = ''
@@ -52,12 +56,20 @@ def makeFMData( from_dict, locked = False):
 		def __init__(self, locked = False):
 			init_dict = self.__init_dict__
 			for key in init_dict:
-				value = init_dict[key]
-				date, mo, da, ye, time, ho, mi, se = [None] * 8
-				if type(value) in [str, unicode]:
-					date, da, mo, ye, time, ho, mi, se = reDateTime.match( value ).groups()
-					if mo and int(mo) > 12:
-						mo, da = da, mo
+                value = init_dict[key]
+                date, mo, da, ye, time, ho, mi, se = [None] * 8
+                flag_date = False
+                flag_time = False
+                if type(value) in [str, unicode]:
+                    date, mo, da, ye, time, ho, mi, se = reDateTime.match( value ).groups()  # change by blj. 3-jan-2016
+                    # if mo and int(mo) > 12:   # commented by blj
+                    #     mo, da = da, mo     # commented by blj
+                    # added by blj to account for badly formatted dates, 14.11.2016
+                    try:
+                        flag_date = int(mo)<13 and int(da)<32
+                    except:
+                        pass
+                    # end added
 
 				if type(init_dict[key]) == dict:
 					setattr(self, key, makeFMData( init_dict[key], locked=False ) ) # lock all substructures??
@@ -76,7 +88,13 @@ def makeFMData( from_dict, locked = False):
 				elif time:
 					setattr(self, key, Time(int(ho), int(mi), int(se)))
 				else:
-					setattr(self, key, init_dict[key])
+                    # modified by blj to return unicode data. Added decoding into utf8 for any str.
+                    if isinstance( init_dict[key], str ):
+                        setattr(self, key, init_dict[key].decode('utf8') )
+                    else:
+                        setattr(self, key, init_dict[key] )
+
+
 			if locked:
 				self.__modified__.add('__locked__')
 
@@ -86,9 +104,15 @@ def makeFMData( from_dict, locked = False):
 			oldvalue = None
 			if hasattr(self, key):
 				oldvalue = getattr(self, key)
+
+			# attributes shoudl always be set as unicode (blj, 12.2016)
+			if not isinstance( value, unicode ) and isinstance( value, basestring ):
+                value = value.decode( 'utf8' )
+			
 			#if oldvalue != None and type(oldvalue) != type(value):
 			#	 raise TypeError, "Type of field '%s' is %s, you cannot insert %s" % (key, type(oldvalue), type(value))
 			object.__setattr__(self, key, value)
+	
 			if oldvalue != None and value != oldvalue:
 				self.__modified__.add(key)
 
