@@ -25,7 +25,7 @@ def key_dict( from_dict ):
 	for key in from_dict:
 		# added by blj, avoid empty keys
         if not key:
-            continue
+        	continue
 
 		k = normalizeUnicode(key,'identifier')
 		if k != key:
