@@ -104,14 +104,14 @@ def makeFMData( from_dict, locked = False):
             oldvalue = None
             if hasattr(self, key):
                 oldvalue = getattr(self, key)
-
-            # attributes shoudl always be set as unicode (blj, 12.2016)
-            if not isinstance( value, unicode ) and isinstance( value, basestring ):
-                value = value.decode( 'utf8' )
             
             #if oldvalue != None and type(oldvalue) != type(value):
             #     raise TypeError, "Type of field '%s' is %s, you cannot insert %s" % (key, type(oldvalue), type(value))
             object.__setattr__(self, key, value)
+    
+            # attributes shoudl always be set as unicode for comparison with initial value (blj, 12.2016)
+            if not isinstance( value, unicode ) and isinstance( value, basestring ):
+                value = value.decode( 'utf8' )
     
             if oldvalue != None and value != oldvalue:
                 self.__modified__.add(key)
