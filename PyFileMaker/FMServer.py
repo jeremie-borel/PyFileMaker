@@ -183,6 +183,12 @@ class FMServer:
 		elif name.find('.') != -1:
 			name = name.replace('.','::')
 
+		# encodes on the fly unicode strings
+		try:
+			value = value.encode('utf8')
+		except ( AttributeError, UnicodeDecodeError ) as e:
+			pass
+
 		self._dbParams.append(
 			[name, value]
 		)

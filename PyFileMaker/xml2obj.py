@@ -72,7 +72,8 @@ class Xml2Obj:
 		'SAX character data event handler'
 		## HACK: to preserve the newlines
 		#if string.strip(data):
-		data = data.encode("utf-8")
+		# encoding removed. Keep everything as utf-8
+		# data = data.encode("utf-8")
 		element = self.nodeStack[-1]
 		element.cdata += data
 		return
