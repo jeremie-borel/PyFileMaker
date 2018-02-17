@@ -17,6 +17,25 @@ import FMXML
 from FMError import *
 from FMData import makeFMData
 
+def _build_date_format( fmp_database ):
+	"""Replaces the notation from fmp timestamps and date formats by
+	the one used in the datetime module"""
+	def build_one( stamp ):
+		return stamp.\
+		  replace( 'yyyy', '%Y' ).\
+		  replace( 'MM', '%m' ).\
+		  replace( 'dd', '%d' ).\
+		  replace( 'HH', '%H' ).\
+		  replace( 'mm', '%M' ).\
+		  replace( 'ss', '%S' )
+
+	return {
+		'date': build_one( fmp_database.get('date-format', '') ),
+		'timestamp': build_one( fmp_database.get('timestamp-format', '') ),
+		'time': build_one( fmp_database.get('time-format', '') ),
+	}
+
+
 class FMResultset(FMXML.FMXML):
 	"""Class defining the information about a resultset."""
 
@@ -43,7 +62,9 @@ class FMResultset(FMXML.FMXML):
 
 		node = self.doGetXMLElement(data, 'datasource')
 		self.database = self.doGetXMLAttributes(node)
-
+		attrs = self.doGetXMLAttributes(node)
+		self.timeformats = _build_date_format(attrs)
+		
 		node = self.doGetXMLElement(data, 'metadata')
 		for subnode in self.doGetXMLElements(node, 'field-definition'):
 			fieldData = self.doGetXMLAttributes(subnode)
@@ -123,7 +144,12 @@ class FMResultset(FMXML.FMXML):
 					if not done:
 						recordDict[subnodename].append(subrecordDict)
 
-			self.resultset.append(makeFMData(recordDict))
+			self.resultset.append(
+				makeFMData(
+					recordDict, 
+					dt_format=None,
+				)
+			)
 
 	def doShow(self, xml=0):
 		"""Shows the contents of our resultset."""
