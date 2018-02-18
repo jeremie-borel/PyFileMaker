@@ -39,7 +39,7 @@ class TypeCaster(dict):
 		'timestamp': '%m/%d/%Y %H:%M:%S',
 	}
 
-	def __init__( self, meta=None, timeformats=None ):
+	def __init__( self ):
 		super( TypeCaster, self ).__init__()
 		self.timeformats = self.__class__.timestamps_default
 		self.is_initialized = False
