@@ -353,7 +353,7 @@ class FMServer:
 		request.append('-findquery')
 
 		resp = self._doRequest(request)
-		result = FMResultset.FMResultset(resp).resultset
+		result = FMResultset.FMResultset(resp, caster=self._caster).resultset
 
 		return result
 
