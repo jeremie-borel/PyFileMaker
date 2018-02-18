@@ -26,6 +26,8 @@ uu = urllib.urlencode
 class FMServer:
 	"""The main class for communicating with FileMaker Server"""
 
+	VERIFY_SSL = False
+
 	def __init__(self, url='http://login:password@localhost/fmi/xml/fmresultset.xml', db='', layout='', caster=FMCaster.TypeCaster, debug=False):
 		"""Class constructor"""
 
@@ -231,7 +233,9 @@ class FMServer:
 
 	def getFile(self, file_xml_uri):
 		""" This will execute cmd to fetch file data from FMServer """
-		find = re.match('/fmi/xml/cnt/([\w\d.-]+)\.([\w]+)?-*', file_xml_uri)
+		# added % and , chars in the list of allowed chars so that html 
+		# special char are possible in the file name. (19.1.2016, blj)
+		find = re.match('/fmi/xml/cnt/([,%\w\d.-]+)\.([\w]+)?-*', file_xml_uri)
 
 		file_name = find.group(1)
 		file_extension = find.group(2)
@@ -681,7 +685,8 @@ class FMServer:
 
 		resp = requests.get(
 			url = url,
-			auth = (self._login, self._password)
+			auth = (self._login, self._password),
+			verify = self.__class__.VERIFY_SSL
 		)
 		resp.raise_for_status()
 
