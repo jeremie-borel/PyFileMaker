@@ -7,29 +7,37 @@
 # http://www.yellowduck.be/filemaker/
 
 # Import the main modules
+try:
+    from mx.DateTime import DateTime, Time, Date
+except:
+    from datetime import datetime as DateTime, time as Time, date as Date
 from re import compile
 from FMError import FMError
 from UnicodeNormalizer import normalizeUnicode
 
 def key_dict( from_dict ):
-	"""Returns dict from_dict['unicode_save_field'] = 'original key with unicode' """
-	new_dict = {}
-	old2new = {}
-	new2old = {}
-	for key in from_dict:
-		k = normalizeUnicode(key,'identifier')
-		if k != key:
-			i = ''
-			while new_dict.has_key("%s%s" % (k,i) ):
-				if not i:
-					i = 1
-				else:
-					i += 1
-			k = "%s%s" % (k,i)
-			old2new[key] = k
-			new2old[k] = key
-		new_dict[k] = from_dict[key]
-	return (new_dict.keys(), new_dict, old2new, new2old)
+    """Returns dict from_dict['unicode_save_field'] = 'original key with unicode' """
+    new_dict = {}
+    old2new = {}
+    new2old = {}
+    for key in from_dict:
+        # added by blj, avoid empty keys
+        if not key:
+            continue
+
+        k = normalizeUnicode(key,'identifier')
+        if k != key:
+            i = ''
+            while new_dict.has_key("%s%s" % (k,i) ):
+                if not i:
+                    i = 1
+                else:
+                    i += 1
+            k = "%s%s" % (k,i)
+            old2new[key] = k
+            new2old[k] = key
+        new_dict[k] = from_dict[key]
+    return (new_dict.keys(), new_dict, old2new, new2old)
 
 def makeFMData( from_dict, locked = False ):
 	"""Returns FMData structure which is initialized by given dictionary"""
