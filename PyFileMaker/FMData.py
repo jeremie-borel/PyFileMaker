@@ -7,15 +7,9 @@
 # http://www.yellowduck.be/filemaker/
 
 # Import the main modules
-try:
-	from mx.DateTime import DateTime, Time, Date
-except:
-	from datetime import datetime as DateTime, time as Time, date as Date
 from re import compile
 from FMError import FMError
 from UnicodeNormalizer import normalizeUnicode
-
-reDateTime = compile('((\d{2})/(\d{2})/(\d{4}))? ?((\d{2}):(\d{2}):(\d{2}))?')
 
 def key_dict( from_dict ):
 	"""Returns dict from_dict['unicode_save_field'] = 'original key with unicode' """
@@ -37,7 +31,7 @@ def key_dict( from_dict ):
 		new_dict[k] = from_dict[key]
 	return (new_dict.keys(), new_dict, old2new, new2old)
 
-def makeFMData( from_dict, locked = False):
+def makeFMData( from_dict, locked = False ):
 	"""Returns FMData structure which is initialized by given dictionary"""
 
 	class FMData(object):
@@ -49,34 +43,24 @@ def makeFMData( from_dict, locked = False):
 		__modified__ = set()
 		__slots__, __init_dict__, __old2new__, __new2old__ = key_dict(  from_dict )
 
-		def __init__(self, locked = False):
+		def __init__(self, locked = False ):
 			init_dict = self.__init_dict__
 			for key in init_dict:
 				value = init_dict[key]
-				date, mo, da, ye, time, ho, mi, se = [None] * 8
-				if type(value) in [str, unicode]:
-					date, da, mo, ye, time, ho, mi, se = reDateTime.match( value ).groups()
-					if mo and int(mo) > 12:
-						mo, da = da, mo
-
+	
 				if type(init_dict[key]) == dict:
 					setattr(self, key, makeFMData( init_dict[key], locked=False ) ) # lock all substructures??
 				elif type(init_dict[key]) == list:
 					l = []
 					for d in init_dict[key]:
 						if type(d) == dict:
-							l.append( makeFMData (d )) # lock ??
+							l.append( makeFMData( d )) # lock ??
 						else:
 							l.append( d )
 					setattr(self, key, l )
-				elif date and time:
-					setattr(self, key, DateTime(int(ye), int(mo), int(da), int(ho), int(mi), int(se)))
-				elif date:
-					setattr(self, key, Date(int(ye), int(mo), int(da)))
-				elif time:
-					setattr(self, key, Time(int(ho), int(mi), int(se)))
 				else:
-					setattr(self, key, init_dict[key])
+					# type is already casted
+				    setattr(self, key, init_dict[key])
 			if locked:
 				self.__modified__.add('__locked__')
 

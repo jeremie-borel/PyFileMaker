@@ -18,6 +18,7 @@ import datetime
 
 # Import the FM modules
 import FMResultset
+import FMCaster
 from FMError import *
 
 uu = urllib.urlencode
@@ -25,10 +26,11 @@ uu = urllib.urlencode
 class FMServer:
 	"""The main class for communicating with FileMaker Server"""
 
-	def __init__(self, url='http://login:password@localhost/fmi/xml/fmresultset.xml', db='', layout='', debug=False):
+	def __init__(self, url='http://login:password@localhost/fmi/xml/fmresultset.xml', db='', layout='', caster=FMCaster.TypeCaster, debug=False):
 		"""Class constructor"""
 
 		self._url = url
+		self._caster = caster()
 		parsed = urlparse.urlparse(self._url)
 
 		self._protocol = parsed.scheme   or 'http'
@@ -178,16 +180,18 @@ class FMServer:
 		if name[-3:] == '.op':
 			return self._setComparasionOperator(name[:-3], value)
 		if name.find('__') != -1:
-			import re
 			name = name.replace('__','::')
 		elif name.find('.') != -1:
 			name = name.replace('.','::')
 
-		# encodes on the fly unicode strings
-		try:
+		if isinstance( value, unicode ):
 			value = value.encode('utf8')
-		except ( AttributeError, UnicodeDecodeError ) as e:
-			pass
+		elif isinstance( value, datetime.datetime ):
+			value = self._caster.as_timestamp( value )
+		elif isinstance( value, datetime.time ):
+			value = self._caster.as_time( value )
+		elif isinstance( value, datetime.date ):
+			value = self._caster.as_date( value )
 
 		self._dbParams.append(
 			[name, value]
@@ -248,7 +252,7 @@ class FMServer:
 		request.append(uu({'-findall': '' }))
 
 		result = self._doRequest(request)
-		result = FMResultset.FMResultset(result)
+		result = FMResultset.FMResultset(result, caster=self._caster)
 
 		try:
 			# Try to return results from the script
@@ -356,7 +360,7 @@ class FMServer:
 		request.append(uu({'-dbnames': '' }))
 
 		result = self._doRequest(request)
-		result = FMResultset.FMResultset(result)
+		result = FMResultset.FMResultset(result, caster=self._caster)
 
 		dbNames = []
 		for dbName in result.resultset:
@@ -375,7 +379,7 @@ class FMServer:
 		request.append(uu({'-layoutnames': '' }))
 
 		result = self._doRequest(request)
-		result = FMResultset.FMResultset(result)
+		result = FMResultset.FMResultset(result, caster=self._caster)
 
 		layoutNames = []
 		for layoutName in result.resultset:
@@ -394,7 +398,7 @@ class FMServer:
 		request.append(uu({'-scriptnames': '' }))
 
 		result = self._doRequest(request)
-		result = FMResultset.FMResultset(result)
+		result = FMResultset.FMResultset(result, caster=self._caster)
 
 		scriptNames = []
 		for scriptName in result.resultset:
@@ -609,13 +613,6 @@ class FMServer:
 				elif dbParam[0] == 'MODID':
 					request.append(uu({ '-modid': dbParam[1] }))
 
-				elif hasattr(dbParam[1], 'strftime'):
-					d = dbParam[1]
-					if (not hasattr(d, 'second')):
-						request.append(uu({ dbParam[0]: d.strftime('%m-%d-%Y') }))
-					else:
-						request.append(uu({ dbParam[0]: d.strftime('%m-%d-%Y %H:%M:%S') }))
-					del(d)
 				else:
 					request.append(uu({ dbParam[0]: dbParam[1] }))
 			request.append(action)
@@ -627,7 +624,7 @@ class FMServer:
 			result = self._doRequest(request)
 
 			try:
-				result = FMResultset.FMResultset(result)
+				result = FMResultset.FMResultset(result, caster=self._caster )
 			except FMFieldError, value:
 				realfields = FMServer(self._buildUrl(), self._db, self._layout).doView()
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # PyFileMaker - Integrating FileMaker and Python
 # (c) 2014-2016 Marcin Kawa, kawa.macin@gmail.com
 # (c) 2006-2008 Klokan Petr Pridal, klokan@klokan.cz 
@@ -6,8 +8,9 @@
 # http://code.google.com/p/pyfilemaker/
 # http://www.yellowduck.be/filemaker/
 
+
 # Import the main modules
-import string
+import string, datetime, time
 from types import *
 import re
 
@@ -17,32 +20,14 @@ import FMXML
 from FMError import *
 from FMData import makeFMData
 
-def _build_date_format( fmp_database ):
-	"""Replaces the notation from fmp timestamps and date formats by
-	the one used in the datetime module"""
-	def build_one( stamp ):
-		return stamp.\
-		  replace( 'yyyy', '%Y' ).\
-		  replace( 'MM', '%m' ).\
-		  replace( 'dd', '%d' ).\
-		  replace( 'HH', '%H' ).\
-		  replace( 'mm', '%M' ).\
-		  replace( 'ss', '%S' )
-
-	return {
-		'date': build_one( fmp_database.get('date-format', '') ),
-		'timestamp': build_one( fmp_database.get('timestamp-format', '') ),
-		'time': build_one( fmp_database.get('time-format', '') ),
-	}
-
-
 class FMResultset(FMXML.FMXML):
 	"""Class defining the information about a resultset."""
 
-	def __init__(self, data):
+	def __init__( self, data, caster ):
 		"""Class constructor"""
 
 		self.data = data
+		self.caster = caster
 		self.errorcode = -1
 		self.product = {}
 		self.database = {}
@@ -62,8 +47,6 @@ class FMResultset(FMXML.FMXML):
 
 		node = self.doGetXMLElement(data, 'datasource')
 		self.database = self.doGetXMLAttributes(node)
-		attrs = self.doGetXMLAttributes(node)
-		self.timeformats = _build_date_format(attrs)
 		
 		node = self.doGetXMLElement(data, 'metadata')
 		for subnode in self.doGetXMLElements(node, 'field-definition'):
@@ -71,19 +54,42 @@ class FMResultset(FMXML.FMXML):
 			self.metadata[fieldData['name']] = fieldData
 			self.fieldNames.append(fieldData['name'])
 
+		if not self.caster.is_initialized:
+			self.caster.initialize( 
+				meta=self.metadata, 
+				timeformats=self.database,
+			)
+
 		node = self.doGetXMLElement(data, 'resultset')
 		for record in self.doGetXMLElements(node, 'record'):
 
 			recordDict = dict()
 			for column in self.doGetXMLElements(record, 'field'):
 				fieldname = self.doGetXMLAttribute(column, 'name')
-				try:
-					recordDict[fieldname] = self.doGetXMLElement(column, 'data').getData()
-				except:
-					recordDict[fieldname] = ''.encode('UTF-8')
-					# it means there are no data for this column!!!
-					#  -> and it's not possible to modify it later
-					#recordDict[fieldname] = None
+				
+				type_caster = self.caster[fieldname]
+				data = ''
+				if self.caster.multivalues[fieldname] == 1:
+					data = type_caster( 
+						self.doGetXMLElement(column, 'data').getData()
+					)
+				else:
+					data = []
+					for n in self.doGetXMLElements(column, 'data'):
+						data.append( type_caster(n.getData()) )
+									
+				recordDict[fieldname] = data
+			
+				# try:
+				# 	data = self.doGetXMLElement(column, 'data').getData()
+				# 	self.caster[fieldname](data)
+				# 	recordDict[fieldname] = self.caster[fieldname](data)
+				# except Exception as e:
+				# 	raise e
+				# 	recordDict[fieldname] = ''.encode('UTF-8')
+				# 	# it means there are no data for this column!!!
+				# 	#  -> and it's not possible to modify it later
+				# 	#recordDict[fieldname] = None
 				if fieldname.find('::') != -1:
 					subfield = fieldname[:fieldname.find('::')]
 					subname = fieldname[fieldname.find('::')+2:]
@@ -145,10 +151,7 @@ class FMResultset(FMXML.FMXML):
 						recordDict[subnodename].append(subrecordDict)
 
 			self.resultset.append(
-				makeFMData(
-					recordDict, 
-					dt_format=None,
-				)
+				makeFMData( recordDict )
 			)
 
 	def doShow(self, xml=0):
