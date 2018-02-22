@@ -13,7 +13,7 @@ import string
 import urllib
 import urlparse
 import requests
-import collections
+import collections 
 import datetime
 
 # Import the FM modules
@@ -353,9 +353,7 @@ class FMServer:
 		request.append('-findquery')
 
 		resp = self._doRequest(request)
-		# modified by blj . 29.12.2015
-		# result = FMResultset.FMResultset(resp).resultset
-		result = FMResultset.FMResultset(resp)
+		result = FMResultset.FMResultset(result, caster=self._caster)
 
 		return result
 
