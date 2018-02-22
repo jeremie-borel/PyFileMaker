@@ -66,7 +66,10 @@ class FMResultset(FMXML.FMXML):
 			recordDict = dict()
 			for column in self.doGetXMLElements(record, 'field'):
 				fieldname = self.doGetXMLAttribute(column, 'name')
-				
+				# some layout do returns fields with no names...
+				if not fieldname:
+					continue
+
 				type_caster = self.caster[fieldname]
 				data = ''
 				if self.caster.multivalues[fieldname] == 1:
