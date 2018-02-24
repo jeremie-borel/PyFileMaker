@@ -289,6 +289,9 @@ class FMServer:
 				inner_key = key[1:]
 				qs_str = "!(q%s)"
 
+			if isinstance( value, unicode ):
+				value = value.encode('utf8')
+
 			params.append(qs_str%idx)
 			values.append(uu({'-q%s'%idx: inner_key}))
 			values.append(uu({'-q%s.value'%idx: value}))
@@ -300,6 +303,9 @@ class FMServer:
 			values = []
 			inner_key = key
 			qs_str = "q%s"
+
+			if isinstance( value, unicode ):
+				value = value.encode('utf8')
 
 			params.append(qs_str%idx)
 			values.append(uu({'-q%s'%idx: inner_key}))
