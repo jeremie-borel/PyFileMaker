@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='PyFileMaker',
-    version="3.3.1",
+    version="3.3.2",
     description='Python Object Wrapper for FileMaker Server XML Interface',
     classifiers=[
         'Development Status :: 4 - Beta',
