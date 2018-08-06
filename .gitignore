@@ -3,3 +3,7 @@ build/
 dist/
 PyFileMaker.egg-info/
 .vscode/
+*~
+.DS_Store
+dummy.py
+*.fmp12

@@ -22,17 +22,26 @@ import FMCaster
 from FMError import *
 
 uu = urllib.urlencode
+# default value for SSL cert verification
+VERIFY_SSL = True
 
 class FMServer:
 	"""The main class for communicating with FileMaker Server"""
 
-	VERIFY_SSL = False
-
-	def __init__(self, url='http://login:password@localhost/fmi/xml/fmresultset.xml', db='', layout='', caster=FMCaster.TypeCaster, debug=False):
+	def __init__(
+		self, 
+		url='http://login:password@localhost/fmi/xml/fmresultset.xml', 
+		db='', 
+		layout='', 
+		caster=FMCaster.TypeCaster,
+		verify_ssl=VERIFY_SSL,
+		debug=False
+	):
 		"""Class constructor"""
 
 		self._url = url
 		self._caster = caster()
+		self.verify_ssl = verify_ssl
 		parsed = urlparse.urlparse(self._url)
 
 		self._protocol = parsed.scheme   or 'http'
@@ -692,7 +701,7 @@ class FMServer:
 		resp = requests.get(
 			url = url,
 			auth = (self._login, self._password),
-			verify = self.__class__.VERIFY_SSL
+			verify = self.verify_ssl,
 		)
 		resp.raise_for_status()
 
