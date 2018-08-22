@@ -7,7 +7,6 @@
 # http://www.yellowduck.be/filemaker/
 
 # Import the main modules
-from exceptions import Exception
 
 FMErrorNum = {}
 FMErrorNum[-1] = 'Unknown error'
