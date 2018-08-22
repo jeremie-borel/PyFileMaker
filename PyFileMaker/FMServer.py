@@ -12,8 +12,9 @@ import sys
 import re
 import six
 import string
-import urllib.request, urllib.parse, urllib.error
-import urllib.parse
+# import urllib.request, urllib.parse, urllib.error
+# import urllib.parse
+from six.moves import urllib
 import requests
 import collections 
 import datetime
