@@ -1,11 +1,16 @@
 #!/usr/bin/env python
+from __future__ import unicode_literals, absolute_import
 # -*- coding: utf-8 -*- 
 #
 # The normalizeUnicode() function, inspired by Plone's
 
+import six
 from unicodedata import normalize, decomposition, combining
 import string
-from exceptions import UnicodeEncodeError
+
+# python3 UnicodeEncodeError is builtins
+if six.PY2:
+    from exceptions import UnicodeEncodeError
 
 # Hand-made table from PloneTool.py
 mapping_custom_1 =  {
@@ -62,11 +67,11 @@ def normalizeUnicode(text, encoding='humanascii'):
     digits, punctuation and whitespace characters. Case is preserved.
     """
     if text == "":
-	return ""
+    	return ""
 
     unicodeinput = True
-    if not isinstance(text, unicode):
-        text = unicode(text, 'utf-8')
+    if not isinstance(text, str):
+        text = str(text, 'utf-8')
         unicodeinput = False
 
     res = ''
@@ -93,11 +98,11 @@ def normalizeUnicode(text, encoding='humanascii'):
                     res += ch
             except UnicodeEncodeError:
                 ordinal = ord(ch)
-                if mapping.has_key(ordinal):
+                if ordinal in mapping:
                     # try to apply custom mappings
                     res += mapping.get(ordinal)
                 elif decomposition(ch) or len(normalize('NFKD',ch)) > 1:
-                    normalized = filter(lambda i: not combining(i), normalize('NFKD', ch)).strip()
+                    normalized = list(filter(lambda i: not combining(i), normalize('NFKD', ch)))
                     # normalized string may contain non-letter chars too. Remove them
                     # normalized string may result to  more than one char
                     if encoding == 'identifier':
@@ -120,22 +125,22 @@ def normalizeUnicode(text, encoding='humanascii'):
 
 if __name__ == '__main__':
     s = 'Žluťoučký kůň úpěl. Gjøremål. فвХΩΧΨÂÄÅÇßåãðþĖĔĒĐĜĞĠĢĤĳĽŬ Süßmittel as utf-8 string into cp1252 subset'
-    print s
+    print(s)
     s = normalizeUnicode(s,'cp1252')
-    print s, type(s)
+    print(s, type(s))
 
-    su = u'Žluťoučký kůň úpěl. Gjøremål. فвХΩΧΨÂÄÅÇßåãðþĖĔĒĐĜĞĠĢĤĳĽŬ Süßmittel as unicode string into cp1250 subset'
-    print su.encode('utf-8')
+    su = 'Žluťoučký kůň úpěl. Gjøremål. فвХΩΧΨÂÄÅÇßåãðþĖĔĒĐĜĞĠĢĤĳĽŬ Süßmittel as unicode string into cp1250 subset'
+    print(su)
     su = normalizeUnicode(su,'cp1252')
-    print su.encode('utf-8'), type(su)
+    print(su, type(su))
 
     s = 'Žluťoučký kůň úpěl. Gjøremål. فвХΩΧΨÂÄÅÇßåãðþĖĔĒĐĜĞĠĢĤĳĽŬ Süßmittel as utf-8 string into humanascii subset'
-    print s
+    print(s)
     s = normalizeUnicode(s)
-    print s, type(s)
+    print(s, type(s))
 
     s = 'Žluťoučký_kůň-úpěl. Gjøremål      فвХΩΧΨÂÄÅÇßåãðþĖĔĒĐĜĞĠĢĤĳĽŬ Süßmittel as utf-8 string into identifier subset'
-    print s
+    print(s)
     s = normalizeUnicode(s, 'identifier')
-    print s, type(s)
+    print(s, type(s))
 

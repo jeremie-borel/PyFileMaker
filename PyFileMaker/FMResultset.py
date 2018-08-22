@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
 
 # PyFileMaker - Integrating FileMaker and Python
 # (c) 2014-2016 Marcin Kawa, kawa.macin@gmail.com
@@ -15,10 +16,10 @@ from types import *
 import re
 
 # Import the FMPro modules
-import xml2obj
-import FMXML
-from FMError import *
-from FMData import makeFMData
+from . import xml2obj
+from . import FMXML
+from .FMError import *
+from .FMData import makeFMData
 
 class FMResultset(FMXML.FMXML):
 	"""Class defining the information about a resultset."""
@@ -96,7 +97,7 @@ class FMResultset(FMXML.FMXML):
 				if fieldname.find('::') != -1:
 					subfield = fieldname[:fieldname.find('::')]
 					subname = fieldname[fieldname.find('::')+2:]
-					if not recordDict.has_key(subfield):
+					if subfield not in recordDict:
 						recordDict[subfield] = dict()
 					recordDict[subfield][subname] = recordDict[fieldname]
 					del(recordDict[fieldname])
@@ -111,7 +112,7 @@ class FMResultset(FMXML.FMXML):
 			for subnode in self.doGetXMLElements(record, 'relatedset'):
 
 				subnodename = subnode.getAttribute('table')
-				if (subnode.getAttribute('count')) > 0 and not recordDict.has_key(subnodename):
+				if (subnode.getAttribute('count')) > 0 and subnodename not in recordDict:
 					recordDict[subnodename] = []
 
 				for subrecord in self.doGetXMLElements(subnode, 'record'):
@@ -129,7 +130,7 @@ class FMResultset(FMXML.FMXML):
 						if fieldname.find('::') != -1:
 							subfield = fieldname[:fieldname.find('::')]
 							subname = fieldname[fieldname.find('::')+2:]
-							if not subrecordDict.has_key(subfield):
+							if subfield not in subrecordDict:
 								subrecordDict[subfield] = dict()
 							subrecordDict[subfield][subname] = subrecordDict[fieldname]
 							del(subrecordDict[fieldname])
@@ -144,7 +145,7 @@ class FMResultset(FMXML.FMXML):
 							for sub in subrecordDict:
 								if sub in ['RECORDID','MODID']:
 									pass
-								elif rec.has_key(sub) and type(rec[sub])==dict:
+								elif sub in rec and type(rec[sub])==dict:
 									rec[sub].update(subrecordDict[sub])
 								else:
 									rec[sub] = subrecordDict[sub]
@@ -161,39 +162,39 @@ class FMResultset(FMXML.FMXML):
 		"""Shows the contents of our resultset."""
 
 		if xml == 0:
-			print 'Errorcode:', self.errorcode
-			print 
+			print('Errorcode:', self.errorcode)
+			print() 
 			
-			print 'Product information:'
-			for key in self.product.keys():
-				print '	 ', key.encode('UTF-8'),
-				print '->', self.product[key].encode('UTF-8')
-			print
+			print('Product information:')
+			for key in list(self.product.keys()):
+				print('	 ', key.encode('UTF-8'), end=' ')
+				print('->', self.product[key].encode('UTF-8'))
+			print()
 			
-			print 'Database information:'
-			for key in self.database.keys():
-				print '	 ', key.encode('UTF-8'),
-				print'->', self.database[key].encode('UTF-8')
-			print
+			print('Database information:')
+			for key in list(self.database.keys()):
+				print('	 ', key.encode('UTF-8'), end=' ')
+				print('->', self.database[key].encode('UTF-8'))
+			print()
 			
-			print 'Metadata:'
-			for field in self.metadata.keys():
-				print
-				print '	  ', field.encode('UTF-8')
+			print('Metadata:')
+			for field in list(self.metadata.keys()):
+				print()
+				print('	  ', field.encode('UTF-8'))
 				for property in self.metadata[field]:
-					print '		  ', property.encode('UTF-8'),
-					print '->', self.metadata[field][property].encode('UTF-8') 
-			print
+					print('		  ', property.encode('UTF-8'), end=' ')
+					print('->', self.metadata[field][property].encode('UTF-8')) 
+			print()
 
-			print 'Records:'
+			print('Records:')
 			for record in self.resultset:
-				print
+				print()
 				for column in record:
-					print '	  ', column.encode('UTF-8'),
+					print('	  ', column.encode('UTF-8'), end=' ')
 					if type(record[column]) == UnicodeType:
-						print '->', record[column].encode('UTF-8')
+						print('->', record[column].encode('UTF-8'))
 					else:
-						print '->', record[column]
+						print('->', record[column])
 
 		else:
 			tags = [
@@ -215,4 +216,4 @@ class FMResultset(FMXML.FMXML):
 				xml = string.replace(xml, '></' + tag, '>\n</' + tag)
 				xml = string.replace(xml, '><' + tag, '>\n<' + tag)
 
-			print xml
+			print(xml)

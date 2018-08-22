@@ -6,14 +6,15 @@
 # http://code.google.com/p/pyfilemaker/
 # http://www.yellowduck.be/filemaker/
 
+import six
 # Import the main modules
 try:
     from mx.DateTime import DateTime, Time, Date
 except:
     from datetime import datetime as DateTime, time as Time, date as Date
 from re import compile
-from FMError import FMError
-from UnicodeNormalizer import normalizeUnicode
+from .FMError import FMError
+from .UnicodeNormalizer import normalizeUnicode
 
 def key_dict( from_dict ):
     """Returns dict from_dict['unicode_save_field'] = 'original key with unicode' """
@@ -25,10 +26,10 @@ def key_dict( from_dict ):
         if not key:
             continue
 
-        k = normalizeUnicode(key,'identifier')
+        k = normalizeUnicode(key,'identifier') 
         if k != key:
             i = ''
-            while new_dict.has_key("%s%s" % (k,i) ):
+            while "%s%s" % (k,i) in new_dict:
                 if not i:
                     i = 1
                 else:
@@ -37,7 +38,7 @@ def key_dict( from_dict ):
             old2new[key] = k
             new2old[k] = key
         new_dict[k] = from_dict[key]
-    return (new_dict.keys(), new_dict, old2new, new2old)
+    return (list(new_dict.keys()), new_dict, old2new, new2old)
 
 def makeFMData( from_dict, locked = False ):
 	"""Returns FMData structure which is initialized by given dictionary"""
@@ -74,7 +75,7 @@ def makeFMData( from_dict, locked = False ):
 
 		def __setattr__(self, key, value):
 			if '__locked__' in self.__modified__:
-				raise AttributeError, "This substructure is read-only, so you cannot modify '%s' attribute." % key
+				raise AttributeError("This substructure is read-only, so you cannot modify '%s' attribute." % key)
 			oldvalue = None
 			if hasattr(self, key):
 				oldvalue = getattr(self, key)
@@ -85,29 +86,29 @@ def makeFMData( from_dict, locked = False ):
 				self.__modified__.add(key)
 
 		def __getitem__(self, key):
-			if type(key) == str or type(key) == unicode:
+			if isinstance( key, six.string_types ):
 				spl = key.split('.')
 			else:
-				print "-"*20, key, type(key)
+				print("-"*20, key, type(key))
 			if len(spl) == 2:
-				if self.__old2new__.has_key(spl[0]):
+				if spl[0] in self.__old2new__:
 					spl[0] = self.__old2new__[spl[0]]
-				if self.__old2new__.has_key(spl[1]):
+				if spl[1] in self.__old2new__:
 					spl[1] = self.__old2new__[spl[1]]					
 				return getattr( getattr(self, spl[0]), spl[1])
-			if self.__old2new__.has_key(key):
+			if key in self.__old2new__:
 				key = self.__old2new__[key]
 			return getattr(self, key)
 
 		def __setitem__(self, key, value):
 			spl = key.split('.')
 			if len(spl) == 2:
-				if self.__old2new__.has_key(spl[0]):
+				if spl[0] in self.__old2new__:
 					spl[0] = self.__old2new__[spl[0]]
-				if self.__old2new__.has_key(spl[1]):
+				if spl[1] in self.__old2new__:
 					spl[1] = self.__old2new__[spl[1]]					
 				return setattr( getattr(self, spl[0]), spl[1], value)
-			if self.__old2new__.has_key(key):
+			if key in self.__old2new__:
 				key = self.__old2new__[key]
 			return setattr(self, key, value)
 
@@ -144,7 +145,7 @@ def makeFMData( from_dict, locked = False ):
 			l = []
 			for key in self.__slots__:
 				ukey = ""
-				if self.__new2old__.has_key(key):
+				if key in self.__new2old__:
 					ukey = " (%s)" % self.__new2old__[key]
 				if hasattr( getattr(self, key), '__slots__'):
 					for subkey in getattr(self, key).__slots__:

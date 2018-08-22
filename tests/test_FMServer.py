@@ -24,13 +24,13 @@
 #
 from nose import with_setup
 from nose.tools import raises
-import ConfigParser, os
+import configparser, os
 from PyFileMaker import FMServer
 
 class TestFMServer:
     
     def setUp(self):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
 #        config.readfp(open('mytesting.cfg'))
 #        
 #        self.hostname = config.get('testing', 'hostname')
