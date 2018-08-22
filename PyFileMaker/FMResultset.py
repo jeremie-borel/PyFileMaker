@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, unicode_literals, print_function
 
 # PyFileMaker - Integrating FileMaker and Python
 # (c) 2014-2016 Marcin Kawa, kawa.macin@gmail.com
