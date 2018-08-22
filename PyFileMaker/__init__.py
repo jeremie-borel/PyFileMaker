@@ -6,7 +6,7 @@
 # http://code.google.com/p/pyfilemaker/
 # http://www.yellowduck.be/filemaker/
 
-__version__ = "3.3"
+__version__ = "3.4"
 
 # Import the main modules
 import sys
@@ -15,8 +15,8 @@ import sys
 try:
 	from xml.parsers import expat
 except:
-	print "Unable to load the EXPAT library. You need to have it installed"
-	print "before you can use pyFileMaker."
+	print( "Unable to load the EXPAT library. You need to have it installed")
+	print( "before you can use pyFileMaker.")
 	sys.exit()
 
 # Import the FileMaker core modules
