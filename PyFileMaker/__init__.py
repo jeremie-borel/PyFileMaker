@@ -5,6 +5,7 @@
 # 
 # http://code.google.com/p/pyfilemaker/
 # http://www.yellowduck.be/filemaker/
+from __future__ import unicode_literals, absolute_import
 
 __version__ = "3.4"
 
@@ -20,5 +21,5 @@ except:
 	sys.exit()
 
 # Import the FileMaker core modules
-from FMServer import *
-from FMError import *
+from .FMServer import *
+from .FMError import *
