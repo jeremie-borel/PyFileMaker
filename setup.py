@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='PyFileMaker',
-    version="3.3.2",
+    version="3.4",
     description='Python Object Wrapper for FileMaker Server XML Interface',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -14,11 +14,12 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Database :: Database Engines/Servers',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords=['FileMaker'],
-    author='Klokan Petr Pridal, Pieter Claerhout, Marcin Kawa',
+    author='Klokan Petr Pridal, Pieter Claerhout, Marcin Kawa, blj',
     author_email='klokan@klokan.cz, pieter@yellowduck.be, kawa.macin@gmail.com',
     url='https://github.com/aeguana/PyFileMaker',
     download_url='https://github.com/aeguana/PyFileMaker/releases',
