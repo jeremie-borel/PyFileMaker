@@ -70,8 +70,8 @@ def normalizeUnicode(text, encoding='humanascii'):
     	return ""
 
     unicodeinput = True
-    if not isinstance(text, str):
-        text = str(text, 'utf-8')
+    if six.PY2 and not isinstance(text, unicode):
+        text = unicode(text, 'utf-8')
         unicodeinput = False
 
     res = ''
